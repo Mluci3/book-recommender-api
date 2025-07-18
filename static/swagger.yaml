@@ -1,0 +1,189 @@
+openapi: 3.0.0
+info:
+  title: 📚 Book Recommender API
+  version: 1.0.0
+  description: API REST para recomendação de livros e análise via Machine Learning, com autenticação JWT.
+servers:
+  - url: https://book-recommender-api2-c9ffe5f7b624.herokuapp.com
+    description: Produção (Heroku)
+  - url: http://localhost:5000
+    description: Localhost
+
+tags:
+  - name: Auth
+    description: Autenticação JWT
+  - name: Books
+    description: Dados de livros
+  - name: ML
+    description: Recomendação via modelo
+  - name: Stats
+    description: Estatísticas e insights
+
+paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Realiza login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login realizado com sucesso
+        '401':
+          description: Usuário ou senha inválidos
+
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: Renova o token de acesso
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Novo token de acesso gerado
+
+  /api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Verifica se a API está no ar
+      responses:
+        '200':
+          description: API operando
+
+  /api/v1/books:
+    get:
+      tags:
+        - Books
+      summary: Lista todos os livros
+      responses:
+        '200':
+          description: Lista de livros
+
+  /api/v1/books/{book_id}:
+    get:
+      tags:
+        - Books
+      summary: Retorna livro por ID
+      parameters:
+        - name: book_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Livro encontrado
+        '404':
+          description: Livro não encontrado
+
+  /api/v1/books/search:
+    get:
+      tags:
+        - Books
+      summary: Busca livros por título e/ou categoria
+      parameters:
+        - name: title
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de resultados da busca
+
+  /api/v1/books/top-rated:
+    get:
+      tags:
+        - Books
+      summary: Lista livros com maior nota
+      responses:
+        '200':
+          description: Lista de top livros
+
+  /api/v1/categories:
+    get:
+      tags:
+        - Books
+      summary: Lista todas as categorias disponíveis
+      responses:
+        '200':
+          description: Lista de categorias
+
+  /api/v1/ml/features:
+    get:
+      tags:
+        - ML
+      summary: Retorna features numéricas
+      responses:
+        '200':
+          description: Dados formatados para ML
+
+  /api/v1/ml/training-data:
+    get:
+      tags:
+        - ML
+      summary: Retorna dados X e y para treino
+      responses:
+        '200':
+          description: Dados de treino
+
+  /api/v1/ml/predictions:
+    post:
+      tags:
+        - ML
+      summary: Realiza previsão de nota com base no preço
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [price]
+              properties:
+                price:
+                  type: number
+      responses:
+        '200':
+          description: Previsão retornada
+        '400':
+          description: Preço inválido
+
+  /api/v1/stats/overview:
+    get:
+      tags:
+        - Stats
+      summary: Estatísticas gerais
+      responses:
+        '200':
+          description: Dados agregados
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
